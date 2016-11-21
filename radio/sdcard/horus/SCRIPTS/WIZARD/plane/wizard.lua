@@ -15,11 +15,6 @@ local MotorFields = {
   {40, 185,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
 }
 
-local AilFiels = {
-{300, 50, COMBO, 1, 1, { "No", "Yes, 1 channel", "Yes, 2 channels"} },
-{300, 80,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },  -- Ail1 chan
-{300, 100,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, -- Ail2 chan
-}
 
 
 local function drawScreenTitle(title,page, pages)
@@ -130,18 +125,25 @@ local function runMotorConfig(event)
   return result
 end
 
+local AilFiels = {
+{30, 105, COMBO, 1, 1, { "None", "One, or two with Y cable", "Two"} },
+{160, 140,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },  -- Ail1 chan
+{160, 160,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, -- Ail2 chan
+}
+
 local function runAilConfig(event)
   lcd.clear()
   fields = AilFiels
   lcd.drawBitmap(MotorConfigBackground, 0, 0)
+  lcd.drawText(30, 80, "Number of ailerons on your model ?", TEXT_COLOR)
   local result = runFieldsPage(event)
   fields[2][4], fields[3][4]=0
   if fields[1][5] >= 1 then
-    lcd.drawText(50, 80, "Channel for Ail1 :", TEXT_COLOR)
+    lcd.drawText(30, 140, "Chan for Ail1 :", TEXT_COLOR)
     fields[2][4]=1
   end
   if fields[1][5] == 2 then
-    lcd.drawText(50, 100, "Channel for Ail2 :", TEXT_COLOR)
+    lcd.drawText(30, 160, "Chan for Ail2 :", TEXT_COLOR)
     fields[3][4]=1
   end
   return result
