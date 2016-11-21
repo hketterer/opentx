@@ -112,21 +112,24 @@ end
 
 local MotorConfigBackground = Bitmap.open("img/bg_engine.png")
 local MotorFields = {
-  {40, 105, COMBO, 1, 1, { "No", "Yes"} },
-  {40, 185,  COMBO, 3, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
+  {50, 50, COMBO, 1, 1, { "No", "Yes"} },
+  {50, 127,  COMBO, 3, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
 }
 
 local function runMotorConfig(event)
   lcd.clear()
+  lcd.setColor(CUSTOM_COLOR, lcd.RGB(255, 255, 255))
   fields = MotorFields
   lcd.drawBitmap(MotorConfigBackground, 0, 0)
-  lcd.drawText(40, 80, "Does your model have a motor ?", TEXT_COLOR)
-  local result = runFieldsPage(event)
+  lcd.drawText(40, 20, "Does your model have a motor ?", TEXT_COLOR)
+  lcd.drawFilledRectangle(40, 45, 200, 30, CUSTOM_COLOR)
   fields[2][4]=0
   if fields[1][5] == 1 then
-    lcd.drawText(40, 160, "What channel is it on ?", TEXT_COLOR)
+    lcd.drawText(40, 100, "What channel is it on ?", TEXT_COLOR)
+    lcd.drawFilledRectangle(40, 122, 100, 30, CUSTOM_COLOR)
     fields[2][4]=1
   end
+  local result = runFieldsPage(event)
   return result
 end
 
@@ -183,40 +186,55 @@ local function runFlapsConfig(event)
   return result
 end
 
+local TailCfgBg0 = Bitmap.open("img/bg_tail0.png")
+local TailCfgBg1 = Bitmap.open("img/bg_tail1.png")
+local TailCfgBg2 = Bitmap.open("img/bg_tail2.png")
+local TailCfgBg3 = Bitmap.open("img/bg_tail3.png")
 local TailFields = {
-{30, 105, COMBO, 1, 1, { "1 channel for Elevator, no Rudder", "One chan for Elevator, one for Rudder", "Two chans for Elevator, one for Rudder", "V Tail"} },
-{30, 160, COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele
-{30, 200, COMBO, 1, 3, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --rud
-{30, 240, COMBO, 0, 5, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele2
+{50, 50, COMBO, 1, 1, { "1 channel for Elevator, no Rudder", "One chan for Elevator, one for Rudder", "Two chans for Elevator, one for Rudder", "V Tail"} },
+{50, 127, COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele
+{50, 167, COMBO, 1, 3, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --rud
+{50, 207, COMBO, 0, 5, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele2
 }
 
 local function runTailConfig(event)
   lcd.clear()
   fields = TailFields
-  lcd.drawBitmap(MotorConfigBackground, 0, 0)
-  lcd.drawText(30, 80, "Pick the tail config of your model", TEXT_COLOR)
-  local result = runFieldsPage(event)
-
   if fields[1][5] == 0 then
-    lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+    lcd.drawBitmap(TailCfgBg0, 0, 0)
+--    lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+    lcd.drawFilledRectangle(40, 122, 100, 30, CUSTOM_COLOR)
 		setFieldsVisible(1, 0, 0)
   end
 	if fields[1][5] == 1 then
-		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
-		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
+                lcd.drawBitmap(TailCfgBg1, 0, 0)
+--		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 122, 100, 30, CUSTOM_COLOR)
+--		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 162, 100, 30, CUSTOM_COLOR)
 		setFieldsVisible(1, 1, 0)
 	end
 	if fields[1][5] == 2 then
-		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
-		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
-		lcd.drawText(30, 220, "Channel for Elevator 2 :", TEXT_COLOR)
+                lcd.drawBitmap(TailCfgBg2, 0, 0)
+--		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 122, 100, 30, CUSTOM_COLOR)
+--		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 162, 100, 30, CUSTOM_COLOR)
+--		lcd.drawText(30, 220, "Channel for Elevator 2 :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 202, 100, 30, CUSTOM_COLOR)
 		setFieldsVisible(1, 1, 1)
 	end
 	if fields[1][5] == 3 then
-		lcd.drawText(30, 140, "Channel for V right :", TEXT_COLOR)
-		lcd.drawText(30, 180, "Channel for V left :", TEXT_COLOR)
+                lcd.drawBitmap(TailCfgBg3, 0, 0)
+--		lcd.drawText(30, 140, "Channel for V right :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 122, 100, 30, CUSTOM_COLOR)
+--		lcd.drawText(30, 180, "Channel for V left :", TEXT_COLOR)
+                lcd.drawFilledRectangle(40, 162, 100, 30, CUSTOM_COLOR)
 		setFieldsVisible(1, 1, 0)
 	end
+  lcd.drawText(40, 20, "Pick the tail config of your model", TEXT_COLOR)
+  lcd.drawFilledRectangle(40, 45, 400, 30, CUSTOM_COLOR)
+  local result = runFieldsPage(event)
   return result
 end
 
