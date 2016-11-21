@@ -8,14 +8,6 @@ local pages = {}
 local fields = {}
 
 
--- {[1] x, [2] x, [3] TYPE,[4] visible [5] default, [6] default, [7]{ values}}
-
-local MotorFields = {
-  {40 , 105, COMBO, 1, 1, { "No", "Yes"} },
-  {40, 185,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
-}
-
-
 
 local function drawScreenTitle(title,page, pages)
 	lcd.drawFilledRectangle(0, 0, LCD_W, 30, TITLE_BGCOLOR)
@@ -66,8 +58,8 @@ local function redrawFieldsPage(event)
 	   attr = attr + TEXT_COLOR
 
      if field[4] == 1 then
-      if field[3] == VALUE and field[5] ~= nil then
-        lcd.drawNumber(field[3], 30+20*index, field[6], LEFT + attr)
+      if field[3] == VALUE then
+        lcd.drawNumber(field[1], field[2], field[5], LEFT + attr)
       elseif field[3] == COMBO then
         if field[5] >= 0 and field[5] < #(field[6]) then
           lcd.drawText(field[1],field[2], field[6][1+field[5]], attr)
@@ -110,6 +102,10 @@ local function runFieldsPage(event)
 end
 
 local MotorConfigBackground = Bitmap.open("img/bg_engine.png")
+local MotorFields = {
+  {40 , 105, COMBO, 1, 1, { "No", "Yes"} },
+  {40, 185,  COMBO, 3, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
+}
 
 local function runMotorConfig(event)
   lcd.clear()
@@ -125,27 +121,102 @@ local function runMotorConfig(event)
   return result
 end
 
-local AilFiels = {
+-- fields format : {[1]x, [2]y, [3]COMBO, [4]visible, [5]default, [6]{ values}}
+-- fields format : {[1]x, [2]y, [3]VALUE, [4]visible, [5]default, [6]min, [7]max}
+local AilFields = {
 {30, 105, COMBO, 1, 1, { "None", "One, or two with Y cable", "Two"} },
-{160, 140,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },  -- Ail1 chan
-{160, 160,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, -- Ail2 chan
+{170, 140,  VALUE, 1, 1, 1, 16 },  -- Ail1 chan
+{170, 160,  VALUE, 5, 1, 1, 16 }, -- Ail2 chan
 }
 
 local function runAilConfig(event)
   lcd.clear()
-  fields = AilFiels
+  fields = AilFields
   lcd.drawBitmap(MotorConfigBackground, 0, 0)
   lcd.drawText(30, 80, "Number of ailerons on your model ?", TEXT_COLOR)
   local result = runFieldsPage(event)
   fields[2][4], fields[3][4]=0
   if fields[1][5] >= 1 then
-    lcd.drawText(30, 140, "Chan for Ail1 :", TEXT_COLOR)
+    lcd.drawText(30, 140, "Channel for Ail1 :", TEXT_COLOR)
     fields[2][4]=1
   end
   if fields[1][5] == 2 then
-    lcd.drawText(30, 160, "Chan for Ail2 :", TEXT_COLOR)
+    lcd.drawText(30, 160, "Channel for Ail2 :", TEXT_COLOR)
     fields[3][4]=1
   end
+  return result
+end
+
+local FlapsFields = {
+{30, 105, COMBO, 1, 1, { "No", "Yes, on one channel", "Yes, on two channels"} },
+{30, 160,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
+{30, 220,  COMBO, 1, 1, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } },
+}
+
+local function runFlapsConfig(event)
+  lcd.clear()
+  fields = FlapsFields
+  lcd.drawBitmap(MotorConfigBackground, 0, 0)
+  lcd.drawText(30, 80, "Does your model have flaps ?", TEXT_COLOR)
+  local result = runFieldsPage(event)
+  fields[2][4], fields[3][4]=0
+  if fields[1][5] == 1 then
+    lcd.drawText(30, 140, "Channel to use for flaps :", TEXT_COLOR)
+    fields[2][4]=1
+  end
+  if fields[1][5] == 2 then
+    lcd.drawText(30, 140, "Channel for right flaps :", TEXT_COLOR)
+		lcd.drawText(30, 200, "Channel for left flaps :", TEXT_COLOR)
+    fields[2][4] = 1
+		fields[3][4] = 1
+  end
+  return result
+end
+
+local TailFields = {
+{30, 105, COMBO, 1, 2, { "1 channel for Elevator, no Rudder", "One chan for Elevator, one for Rudder", "Two chans for Elevator, one for Rudder", "V Tail"} },
+{30, 160,  COMBO, 1, 2, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele
+{30, 200,  COMBO, 1, 4, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --rud
+{30, 240,  COMBO, 0, 6, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8"  } }, --ele2
+}
+
+local function runTailConfig(event)
+  lcd.clear()
+  fields = TailFields
+  lcd.drawBitmap(MotorConfigBackground, 0, 0)
+  lcd.drawText(30, 80, "Pick the tail config of your model", TEXT_COLOR)
+  local result = runFieldsPage(event)
+	fields[2][4]=0
+	fields[3][4]=0
+	fields[3][5]=0
+  if fields[1][5] == 0 then
+    lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+    fields[2][4]=1
+		fields[3][4]=0
+		fields[4][4]=0
+  end
+	if fields[1][5] == 1 then
+		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
+		fields[2][4]=1
+		fields[3][4]=1
+		fields[4][4]=0
+	end
+	if fields[1][5] == 2 then
+		lcd.drawText(30, 140, "Channel for Elevator :", TEXT_COLOR)
+		lcd.drawText(30, 180, "Channel for Rudder :", TEXT_COLOR)
+		lcd.drawText(30, 220, "Channel for Elevator 2 :", TEXT_COLOR)
+		fields[2][4]=1
+		fields[3][4]=1
+		fields[4][4]=1
+	end
+	if fields[1][5] == 3 then
+		lcd.drawText(30, 140, "Channel for V right :", TEXT_COLOR)
+		lcd.drawText(30, 180, "Channel for V left :", TEXT_COLOR)
+		fields[2][4]=1
+		fields[3][4]=1
+		fields[4][4]=0
+	end
   return result
 end
 
@@ -155,6 +226,8 @@ local function init()
   pages = {
     runMotorConfig,
     runAilConfig,
+		runFlapsConfig,
+		runTailConfig,
   }
 end
 
