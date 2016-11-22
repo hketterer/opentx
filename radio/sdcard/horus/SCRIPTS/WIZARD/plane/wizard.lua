@@ -222,13 +222,14 @@ local function runTailConfig(event)
 end
 
 local lineIndex
-local function drawNextLine(text)
+local function drawNextLine(text, text2)
   lcd.drawText(40, lineIndex, text, TEXT_COLOR)
+  lcd.drawText(250, lineIndex, text2, TEXT_COLOR)
   lineIndex = lineIndex + 20
 end
 
 local ConfigSummaryFields = {
-  {300, 250, COMBO, 1, 0, { "No", "Yes, create the plane"} },
+  {300, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, create the plane !"} },
 }
 
 local function runConfigSummary(event)
@@ -237,14 +238,42 @@ local function runConfigSummary(event)
   lcd.drawBitmap(MotorConfigBackground, 0, 0)
   lineIndex = 40
   -- motors
-  drawNextLine("Test line 1")
-  drawNextLine("Test line 2")
-  drawNextLine("Test line 3")
+  if(MotorFields[1][5] == 1) then
+    drawNextLine("Motor chan :", MotorFields[2][5])
+  elseif (MotorFields[2][5] == 2) then
+    drawNextLine("Motor 1 chan :", MotorFields[2][5])
+    drawNextLine("Motor 2 chan :", MotorFields[3][5])
+  end
   -- ail
+  if(AilFields[1][5] == 1) then
+    drawNextLine("Aileron chan :",AilFields[2][5])
+  elseif (AilFields[1][5] == 2) then
+    drawNextLine("Aileron 1 chan :",AilFields[2][5])
+    drawNextLine("Aileron 2 chan :",AilFields[3][5])
+  end
   -- flaps
+  if(FlapsFields[1][5] == 1) then
+    drawNextLine("Flaps chan :",FlapsFields[2][5])
+  elseif (FlapsFields[1][5] == 2) then
+    drawNextLine("Flaps 1 chan :",FlapsFields[2][5])
+    drawNextLine("Flaps 2 chan :",FlapsFields[3][5])
+  end
   -- tail
+  if(TailFields[1][5] == 0) then
+    drawNextLine("Elevator chan :",TailFields[2][5])
+  elseif (TailFields[1][5] == 1) then
+    drawNextLine("Elevator chan :",TailFields[2][5])
+    drawNextLine("Rudder chan :",TailFields[3][5])
+  elseif (TailFields[1][5] == 2) then
+    drawNextLine("Elevator 1 chan :",TailFields[2][5])
+    drawNextLine("Rudder chan :",TailFields[3][5])
+    drawNextLine("Elevator 2 chan :",TailFields[4][5])
+  elseif (TailFields[1][5] == 3) then
+    drawNextLine("V-Tail elevator :", TailFields[2][5])
+    drawNextLine("V-Tail rudder :", TailFields[2][5])
+  end
   local result = runFieldsPage(event)
-  if(fields[1][5] == 1) then
+  if(fields[1][5] == 1 and edit == false) then
     selectPage(1)
   end
   return result
