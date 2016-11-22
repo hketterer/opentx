@@ -109,9 +109,9 @@ local MotorFields = {
 
 local function runMotorConfig(event)
   lcd.clear()
+  lcd.drawBitmap(MotorConfigBackground, 0, 0)
   lcd.setColor(CUSTOM_COLOR, lcd.RGB(255, 255, 255))
   fields = MotorFields
-  lcd.drawBitmap(MotorConfigBackground, 0, 0)
   lcd.drawText(40, 20, "Does your model have a motor ?", TEXT_COLOR)
   lcd.drawFilledRectangle(40, 45, 200, 30, CUSTOM_COLOR)
   fields[2][4]=0
@@ -127,7 +127,7 @@ end
 -- fields format : {[1]x, [2]y, [3]COMBO, [4]visible, [5]default, [6]{values}}
 -- fields format : {[1]x, [2]y, [3]VALUE, [4]visible, [5]default, [6]min, [7]max}
 local AilFields = {
-  {30, 105, COMBO, 1, 1, { "None", "One, or two with Y cable", "Two"} },
+  {30, 105, COMBO, 1, 2, { "None", "One, or two with Y cable", "Two"} },
   {170, 140, COMBO, 1, 0, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail1 chan
   {170, 160, COMBO, 1, 4, { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8" } }, -- Ail2 chan
 }
@@ -221,6 +221,91 @@ local function runTailConfig(event)
   return result
 end
 
+local lineIndex
+local function drawNextLine(text)
+  lcd.drawText(40, lineIndex, text, TEXT_COLOR)
+  lineIndex = lineIndex + 20
+end
+
+local ConfigSummaryFields = {
+  {300, 250, COMBO, 1, 0, { "No", "Yes, create the plane"} },
+}
+
+local function runConfigSummary(event)
+  lcd.clear()
+  fields = ConfigSummaryFields
+  lcd.drawBitmap(MotorConfigBackground, 0, 0)
+  lineIndex = 40
+  -- motors
+  drawNextLine("Test line 1")
+  drawNextLine("Test line 2")
+  drawNextLine("Test line 3")
+  -- ail
+  -- flaps
+  -- tail
+  local result = runFieldsPage(event)
+  if(fields[1][5] == 1) then
+    selectPage(1)
+  end
+  return result
+end
+
+local function addMix(channel, input, name, weight, index)
+  local mix = { source=input, name=name }
+  if weight ~= nil then
+    mix.weight = weight
+  end
+  if index == nil then
+    index = 0
+  end
+  model.insertMix(channel, index, mix)
+end
+
+local function createModel()
+  lcd.clear()
+  lcd.drawBitmap(MotorConfigBackground, 0, 0)
+  model.defaultInputs()
+  model.deleteMixes()
+  -- motor
+  if(MotorFields[1][5] == 1) then
+    addMix(MotorFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(2), "Motor")
+  elseif (MotorFields[2][5] == 2) then
+    addMix(MotorFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(2), "Motor1")
+    addMix(MotorFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(2), "Motor2")
+  end
+  -- Ailerons
+  if(AilFields[1][5] == 1) then
+    addMix(AilFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(3), "Ail")
+  elseif (AilFields[1][5] == 2) then
+    addMix(AilFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(3), "Ail1")
+    addMix(AilFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(3), "Ail2", -100)
+  end
+  -- Flaps
+  if(FlapsFields[1][5] == 1) then
+    addMix(FlapsFields[2][5], MIXSRC_SA, "Flaps")
+  elseif (FlapsFields[1][5] == 2) then
+    addMix(FlapsFields[2][5], MIXSRC_SA, "Flaps1")
+    addMix(FlapsFields[3][5], MIXSRC_SA, "Flaps2")
+  end
+  -- Tail
+  if(TailFields[1][5] == 0) then
+    addMix(TailFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Elev")
+  elseif (TailFields[1][5] == 1) then
+    addMix(TailFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Elev")
+    addMix(TailFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "Rudder")
+  elseif (TailFields[1][5] == 2) then
+    addMix(TailFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Elev1")
+    addMix(TailFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "Rudder")
+    addMix(TailFields[4][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "Elev2")
+  elseif (TailFields[1][5] == 3) then
+    addMix(TailFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "VTailE", 50)
+    addMix(TailFields[2][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "VTailR", 50, 1)
+    addMix(TailFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(1), "VTailE", 50)
+    addMix(TailFields[3][5], MIXSRC_FIRST_INPUT+defaultChannel(0), "VTailR", -50, 1)
+  end
+  return 1
+end
+
 -- Init
 local function init()
   current, edit = 1, false
@@ -229,6 +314,8 @@ local function init()
     runAilConfig,
     runFlapsConfig,
     runTailConfig,
+    runConfigSummary,
+    createModel
   }
 end
 
@@ -237,9 +324,9 @@ local function run(event)
   if event == nil then
     error("Cannot be run as a model script!")
     return 2
-  elseif event == EVT_PAGE_BREAK or event == EVT_PAGEDN_FIRST then
+  elseif (event == EVT_PAGE_BREAK or event == EVT_PAGEDN_FIRST) and page < #pages-1 then
     selectPage(1)
-  elseif event == EVT_PAGE_LONG or event == EVT_PAGEUP_FIRST then
+  elseif (event == EVT_PAGE_LONG or event == EVT_PAGEUP_FIRST) and page > 1 then
     killEvents(event);
     selectPage(-1)
   end
