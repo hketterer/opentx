@@ -229,7 +229,7 @@ local function drawNextLine(text, text2)
 end
 
 local ConfigSummaryFields = {
-  {300, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, create the plane !"} },
+  {150, 250, COMBO, 1, 0, { "No, I need to change something", "Yes, create the plane !"} },
 }
 
 local function runConfigSummary(event)
